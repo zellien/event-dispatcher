@@ -48,4 +48,13 @@ final class EventDispatcher implements EventDispatcherInterface {
         }
     }
 
+    /**
+     * @param iterable $events
+     */
+    public function dispatchAll(iterable $events): void {
+        foreach ($events as $event) {
+            $this->dispatch($event);
+        }
+    }
+
 }

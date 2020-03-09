@@ -18,4 +18,10 @@ use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
  */
 interface EventDispatcherInterface extends PsrEventDispatcherInterface {
 
+    /**
+     * Dispatch all events from haystack
+     * @param iterable $events
+     */
+    public function dispatchAll(iterable $events): void;
+
 }
