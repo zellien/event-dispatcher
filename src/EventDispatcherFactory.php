@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace Zellien\EventDispatcher;
 
 use Psr\Container\ContainerInterface;
-use ReflectionClass;
 use ReflectionException;
 
 /**
@@ -27,22 +26,43 @@ final class EventDispatcherFactory {
      */
     public function __invoke(ContainerInterface $container): EventDispatcherInterface {
         $config = $container->get('config');
+        $relations = $config['event_dispatcher']['relations'] ?? [];
         $factories = $config['event_dispatcher']['factories'] ?? [];
         $resolver = new ListenerResolver();
-        foreach ($factories as $eventName => $factory) {
-            if (is_array($factory) && isset($factory['listener'])) {
-                $listener = $factory['listener'];
-                $priority = $factory['priority'] ?: 100;
-                if ($listener instanceof ListenerFactoryInterface) {
-                    $reflection = new ReflectionClass($listener);
-                    $listener = $reflection->newInstanceWithoutConstructor();
+        foreach ($relations as $event => $rel) {
+            $priority = 100;
+
+            // Retrieve listener
+            if (is_array($rel) && isset($rel['listener'])) {
+                $listener = $rel['listener'];
+                if (isset($rel['priority']) && is_numeric($rel['priority'])) {
+                    $priority = intval($rel['priority']);
                 }
-                if (is_callable($listener)) {
-                    $listener = call_user_func($listener, $container);
-                    $resolver->attach($eventName, $listener, $priority);
-                }
+            } elseif (is_string($rel)) {
+                $listener = $rel;
+            } else {
+                continue;
+            }
+
+            // Check listener interface and factory exists
+            if (!is_a($listener, ListenerInterface::class, true) || !isset($factories[$listener])) {
+                continue;
+            }
+
+            $factory = $factories[$listener];
+
+            // If invokable factory
+            if (is_a($factory, ListenerFactoryInterface::class, true)) {
+                $factory = new $factory();
+            }
+
+            // Attach listener to resolver
+            if (is_callable($factory)) {
+                $listener = call_user_func($factory, $container);
+                $resolver->attach($event, $listener, $priority);
             }
         }
+
         return new EventDispatcher($resolver);
     }
 
