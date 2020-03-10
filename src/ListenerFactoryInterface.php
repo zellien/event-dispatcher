@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Zellien\EventDispatcher;
 
-use Psr\Container\ContainerInterface;
+use Interop\Container\ContainerInterface;
 
 /**
  * Interface ListenerFactoryInterface
@@ -20,8 +20,10 @@ interface ListenerFactoryInterface {
 
     /**
      * @param ContainerInterface $container
+     * @param string             $requestedName
+     * @param array|null         $options
      * @return ListenerInterface
      */
-    public function __invoke(ContainerInterface $container): ListenerInterface;
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): ListenerInterface;
 
 }
