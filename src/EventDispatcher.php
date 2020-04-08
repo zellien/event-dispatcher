@@ -42,8 +42,9 @@ final class EventDispatcher implements EventDispatcherInterface {
                 gettype($event)));
         }
         $listeners = $this->resolver->getListenersForEvent($event);
-        /** @var ListenerInterface $listener */
         foreach ($listeners as $listener) {
+            /** @var ListenerInterface $listener */
+            $listener = $listener['listener'];
             $listener->handle($event);
         }
     }
