@@ -58,7 +58,7 @@ final class EventDispatcherFactory {
 
             // Attach listener to resolver
             if (is_callable($factory)) {
-                $listener = call_user_func($factory, $container);
+                $listener = call_user_func($factory, $container, $listener);
                 $resolver->attach($event, $listener, $priority);
             }
         }
